@@ -333,7 +333,7 @@ document.querySelectorAll('.stepper').forEach(st=>{
     const b=e.target;if(b.tagName!=='BUTTON')return;
     const t=st.dataset.target,inc=b.classList.contains('plus')?1:-1;
     if(t==='n'){ n=Math.max(2,Math.min(10,n+inc)); $('#nVal').textContent=n; }
-    else       { r=Math.max(1,Math.min(10,r+inc)); $('#rVal').textContent=r; }
+    else       { r=Math.max(1,Math.min(6,r+inc)); $('#rVal').textContent=r; }
     newGame();
   };
 });
