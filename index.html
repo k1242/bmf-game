@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>BMF Game</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- base palette ---------- */
+:root{
+  --n:5;                 /* changed by JS */
+  --size:46px; --gap:6px;
+  --accent:#6c63ff;
+  --accent-light:#d6d8ff;
+  --bad:#ff6f6f;
+  --bg:#fafafa;
+  --tile-empty:#e9e9e9;
+  --panelW:260px;
+}
+@media(max-width:600px){:root{--size:36px;--gap:4px}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Inter',sans-serif;background:var(--bg);color:#3e3d3a;
+  display:flex;flex-direction:column;align-items:center;min-height:100vh;
+}
+
+/* ---------- Header ---------- */
+.header{width:100%;display:flex;align-items:center;justify-content:space-between;
+        padding:20px 24px 0;z-index:30}
+.hamburger{font-size:2rem;border:none;background:transparent;cursor:pointer}
+.title{font-size:2.8rem;font-weight:600;margin-left:12px}
+#newBtn{cursor:pointer;padding:10px 22px;border:none;border-radius:8px;
+        background:#9088ff;color:#fff;font-weight:600;box-shadow:0 2px 4px rgba(0,0,0,.15)}
+
+/* right block */
+.rightControls{display:flex;align-items:center;gap:16px}
+#fbLink,#helpLink{
+  font-size:1rem;text-decoration:none;color:#3e3d3a;opacity:.75;transition:opacity .15s;
+}
+#fbLink:hover,#helpLink:hover{opacity:1}
+
+/* ---------- Settings panel ---------- */
+#panel{position:fixed;top:0;left:0;height:100%;width:var(--panelW);
+       background:#fff;border-right:1px solid #dadada;transform:translateX(-100%);
+       transition:transform .25s ease;z-index:25;padding:90px 22px 30px}
+#panel.open{transform:translateX(0)}
+#setTitle{font-size:1.3rem;font-weight:600;margin-bottom:22px}
+.setting{margin-bottom:22px;display:flex;align-items:center;justify-content:space-between}
+.setting label{font-weight:600}
+
+/* OR/XOR toggle */
+.modeToggle{display:flex;gap:6px}
+.modeToggle input{display:none}
+.modeBtn{padding:6px 14px;border:2px solid var(--accent);border-radius:6px;cursor:pointer;
+         background:#fff;font-weight:600;transition:.15s}
+.modeBtn.checked{background:var(--accent);color:#fff}
+
+/* steppers */
+.stepper{display:flex;align-items:center;gap:12px}
+.stepper button{width:36px;height:36px;border:none;border-radius:8px;background:#e0e0e0;
+               font-size:1.2rem;cursor:pointer;font-weight:600;transition:background .12s}
+.stepper button:hover{background:#d4d4d4}
+.stepper span{min-width:28px;text-align:center;font-weight:600;font-size:1.1rem}
+
+/* ---------- Game board ---------- */
+#app{display:flex;flex-direction:column;align-items:center;margin-top:26px}
+.grid{display:grid;gap:var(--gap)}
+.grid.main{grid-template-columns:repeat(var(--n),var(--size));
+           grid-template-rows:repeat(var(--n),var(--size))}
+.grid.mini{grid-template-columns:repeat(var(--n),14px);
+           grid-template-rows:repeat(var(--n),14px);gap:2px}
+.tile{width:100%;height:100%;border-radius:8px;display:flex;align-items:center;justify-content:center;
+      transition:background .1s}
+.tile.zero{background:var(--tile-empty)}
+.tile.want{background:var(--accent-light)}
+.tile.good{background:var(--accent);color:#fff}
+.tile.bad {background:var(--bad)}
+.toggle{width:var(--size);height:var(--size);border-radius:8px;border:2px solid var(--accent);
+        background:transparent;cursor:pointer;transition:.1s}
+.toggle.on{background:var(--accent)}
+.editWrap{display:flex;gap:calc(var(--gap)*2);align-items:flex-start}
+.rowToggles{display:grid;grid-template-rows:repeat(var(--n),var(--size));gap:var(--gap)}
+.colToggles{display:grid;grid-template-columns:repeat(var(--n),var(--size));gap:var(--gap);margin-top:var(--gap)}
+.gridCard{padding:var(--gap);background:#fff;border:2px solid #dcdcdc;border-radius:12px;
+          box-shadow:0 2px 6px rgba(0,0,0,.08)}
+#cards{display:flex;gap:14px;margin-top:16px}
+.card{cursor:pointer;padding:8px;border-radius:8px;border:2px solid transparent;transition:border .12s}
+.card.active{border-color:var(--accent)}
+.btnbar{margin:18px 0}
+#clearBtn{cursor:pointer;padding:8px 22px;border:none;border-radius:8px;background:#e0e0e0;font-weight:600}
+
+/* ---------- previews on the right ---------- */
+.previewWrap{
+  display:flex;
+  flex-direction:column;
+  gap:var(--gap);
+}
+.previewWrap .label{
+  font-weight:600;
+  text-align:center;
+  margin-bottom:4px;
+}
+
+/* overlay (win) */
+#successMsg{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+            backdrop-filter:blur(2px);background:rgba(0,0,0,.4);z-index:40}
+#successMsg div{background:#fff;padding:40px 60px;border-radius:14px;font-size:2rem;font-weight:600}
+
+/* help modal */
+.helpModal{display:none;position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;
+           backdrop-filter:blur(3px);background:rgba(0,0,0,.45)}
+.helpBox{max-width:320px;background:#fff;padding:30px 28px;border-radius:14px;
+         box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.helpBox h2{margin-bottom:14px;font-size:1.4rem}
+.helpBox ul{margin-left:18px;margin-bottom:20px;font-size:.95rem;line-height:1.35}
+.helpBox li{margin-bottom:10px}
+/* inline display keeps text on same line */
+.helpBox .tile{
+  width:18px;height:18px;margin-right:6px;vertical-align:middle;
+  display:inline-block;          /* NEW */
+}
+#closeHelp{cursor:pointer;padding:8px 18px;border:none;border-radius:8px;
+           background:var(--accent);color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div style="display:flex;align-items:center;gap:18px">
+    <button id="menuBtn" class="hamburger">☰</button>
+    <div class="title">BMF</div>
+    <a id="helpLink" href="#!">How&nbsp;to&nbsp;play</a>
+  </div>
+
+  <div class="rightControls">
+    <a id="fbLink" href="https://forms.gle/tAUDAFZZKGTbSEpk9" target="_blank" rel="noopener noreferrer">
+       Give Feedback</a>
+    <button id="newBtn">New Game</button>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="panel">
+  <div id="setTitle">Settings</div>
+
+  <div class="setting">
+    <label>Combine</label>
+    <div class="modeToggle">
+      <label class="modeBtn" id="orBtn"><input type="radio" name="mode" value="bool">OR</label>
+      <label class="modeBtn checked" id="xorBtn"><input type="radio" name="mode" value="mod" checked>XOR</label>
+    </div>
+  </div>
+
+  <div class="setting">
+    <label>Board size</label>
+    <div class="stepper" data-target="n">
+      <button class="minus">-</button><span id="nVal">5</span><button class="plus">+</button>
+    </div>
+  </div>
+
+  <div class="setting">
+    <label>Layers</label>
+    <div class="stepper" data-target="r">
+      <button class="minus">-</button><span id="rVal">3</span><button class="plus">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div id="helpModal" class="helpModal">
+  <div class="helpBox">
+    <h2>How to play</h2>
+    <ul>
+      <li>Cover cells to match the hidden pattern.</li>
+      <li>In each layer select rows and columns by outer boxes to fill intersections.</li>
+      <li>All layers are combined (with <b>OR</b> or <b>XOR</b>) into the final pattern.</li>
+      <li><b>Colours:</b><br>
+        <span class="tile want"></span> Need to fill<br>
+        <span class="tile good"></span> Correct<br>
+        <span class="tile bad"></span> Incorrect
+      </li>
+      <li>In <b>Settings (☰)</b> select combine mode, board size and number of layers. </li>
+    </ul>
+    <button id="closeHelp">Got it!</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="app">
+  <div class="editWrap">
+    <div id="rowToggles" class="rowToggles"></div>
+
+    <!-- main board + column toggles -->
+    <div>
+      <div class="gridCard"><div id="editGrid" class="grid main"></div></div>
+      <div id="colToggles" class="colToggles"></div>
+    </div>
+
+    <!-- NEW: preview cards -->
+    <div id="previews" class="previewWrap"></div>
+  </div>
+
+  <div class="btnbar"><button id="clearBtn">Clear</button></div>
+  <div id="cards"></div>
+</div>
+
+<!-- WIN -->
+<div id="successMsg"><div>✔ Correct!</div></div>
+
+<script>
+/* ---------- parameters ---------- */
+let n=5,r=3,mode='mod';
+let state,target;
+
+/* helpers */
+const $=q=>document.querySelector(q);
+const rnd=()=>Math.random()<.5?1:0;
+const eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const applyCSS = ()=>document.documentElement.style.setProperty('--n',n);
+
+/* state / target */
+function initState(){
+  state={U:Array.from({length:r},()=>Array(n).fill(0)),
+         V:Array.from({length:r},()=>Array(n).fill(0)),cur:0};
+}
+function genTarget(){
+  const tU=Array.from({length:r},()=>Array.from({length:n},rnd));
+  const tV=Array.from({length:r},()=>Array.from({length:n},rnd));
+  target=Array.from({length:n},()=>Array(n).fill(0));
+  for(let k=0;k<r;k++)
+    for(let i=0;i<n;i++) if(tU[k][i])
+      for(let j=0;j<n;j++) if(tV[k][j])
+        mode==='bool'?target[i][j]=1:target[i][j]^=1;
+}
+function player(){
+  const P=Array.from({length:n},()=>Array(n).fill(0));
+  for(let k=0;k<r;k++)
+    for(let i=0;i<n;i++) if(state.U[k][i])
+      for(let j=0;j<n;j++) if(state.V[k][j])
+        mode==='bool'?P[i][j]=1:P[i][j]^=1;
+  return P;
+}
+
+/* colouring */
+function cls(t,p,c){
+  if(mode==='bool'){
+    if(t)  return c?'good':(p?'zero':'want');
+    return c?'bad':'zero';
+  }
+  const diff=t^(p^c);          // p without this diad
+  if(diff) return c?'good':'want';
+  return c?'bad':'zero';
+}
+
+/* mini grid generator for previews */
+function miniGrid(arr,onCls){
+  return Array.from({length:n},(_,i)=>
+    Array.from({length:n},(_,j)=>
+      `<div class="tile ${arr[i][j]?onCls:'zero'}"></div>`).join('')).join('');
+}
+
+/* render */
+function render(){
+  const P=player(), k=state.cur;
+
+  /* main editable grid */
+  $('#editGrid').innerHTML=Array.from({length:n},(_,i)=>
+    Array.from({length:n},(_,j)=>{
+      const t=target[i][j],p=P[i][j],c=state.U[k][i]&&state.V[k][j];
+      return `<div class="tile ${cls(t,p,c)}"></div>`;
+    }).join('')
+  ).join('');
+
+  /* row toggles */
+  $('#rowToggles').innerHTML=state.U[k].map((v,i)=>
+    `<button class="toggle ${v?'on':''}" data-row="${i}"></button>`).join('');
+
+  /* column toggles */
+  $('#colToggles').innerHTML=state.V[k].map((v,j)=>
+    `<button class="toggle ${v?'on':''}" data-col="${j}"></button>`).join('');
+
+  /* layer cards */
+  $('#cards').innerHTML=Array.from({length:r},(_,d)=>{
+    const mini=Array.from({length:n},(_,i)=>
+      Array.from({length:n},(_,j)=>{
+        const t=target[i][j],p=P[i][j],c=state.U[d][i]&&state.V[d][j];
+        return `<div class="tile ${cls(t,p,c)}"></div>`;
+      }).join('')).join('');
+    return `<div class="card ${d===k?'active':''}" data-card="${d}">
+              <div class="grid mini">${mini}</div>
+            </div>`;
+  }).join('');
+
+  /* NEW: preview cards (target & player) */
+  $('#previews').innerHTML=
+    `<div class="gridCard">
+        <div class="label">Target</div>
+        <div class="grid mini">${miniGrid(target,'good')}</div>
+     </div>
+     <div class="gridCard">
+        <div class="label">You</div>
+        <div class="grid mini">${miniGrid(P,'good')}</div>
+     </div>`;
+
+  /* win overlay */
+  $('#successMsg').style.display=eq(P,target)?'flex':'none';
+}
+
+/* ---------- actions ---------- */
+$('#menuBtn').onclick = ()=>$('#panel').classList.toggle('open');
+$('#newBtn').onclick  = ()=>newGame();
+$('#clearBtn').onclick= ()=>{state.U.forEach(u=>u.fill(0));state.V.forEach(v=>v.fill(0));render();};
+$('#rowToggles').onclick=e=>{const i=e.target.dataset.row;if(i!==undefined){state.U[state.cur][+i]^=1;render();}};
+$('#colToggles').onclick=e=>{const j=e.target.dataset.col;if(j!==undefined){state.V[state.cur][+j]^=1;render();}};
+$('#cards').onclick   =e=>{const c=e.target.closest('.card');if(c){state.cur=+c.dataset.card;render();}};
+$('#successMsg').onclick=()=>$('#successMsg').style.display='none';
+
+/* OR/XOR */
+function setMode(newMode){
+  mode=newMode; updateModeButtons(); newGame();
+}
+function updateModeButtons(){
+  $('#orBtn').classList.toggle('checked',mode==='bool');
+  $('#xorBtn').classList.toggle('checked',mode==='mod');
+}
+$('#orBtn').onclick =()=>setMode('bool');
+$('#xorBtn').onclick=()=>setMode('mod');
+
+/* steppers */
+document.querySelectorAll('.stepper').forEach(st=>{
+  st.onclick=e=>{
+    const b=e.target;if(b.tagName!=='BUTTON')return;
+    const t=st.dataset.target,inc=b.classList.contains('plus')?1:-1;
+    if(t==='n'){ n=Math.max(2,Math.min(10,n+inc)); $('#nVal').textContent=n; }
+    else       { r=Math.max(1,Math.min(10,r+inc)); $('#rVal').textContent=r; }
+    newGame();
+  };
+});
+
+/* help modal */
+$('#helpLink').onclick=e=>{e.preventDefault();$('#helpModal').style.display='flex';};
+$('#closeHelp').onclick =()=>$('#helpModal').style.display='none';
+$('#helpModal').onclick =e=>{if(e.target.id==='helpModal')$('#helpModal').style.display='none';};
+
+/* new game */
+function newGame(){applyCSS();initState();genTarget();render();}
+$('#nVal').textContent=n;$('#rVal').textContent=r;updateModeButtons();newGame();
+</script>
+</body>
+</html>
