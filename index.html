@@ -4,15 +4,14 @@
 <meta charset="UTF-8">
 <title>BMF Game</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="A logic puzzle based on Binary Matrix Factorisation (BMF)">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="https://qdiag.xyz/bmf/favicon.png">
 
 <style>
-/* ----------- CSS VARIABLES ------------ */
+/* ====== VARIABLES ====== */
 :root{
-  --n:5;                   /* board size                              */
-  --size:46px;             /* board cell size                         */
+  --n:5;                 /* board size                      */
+  --size:46px;           /* board cell size                 */
   --gap:6px;
   --accent:#6c63ff;
   --accent-light:#d6d8ff;
@@ -20,51 +19,54 @@
   --bg:#fafafa;
   --tile-empty:#e9e9e9;
   --panelW:260px;
-  --zoom:1;                /* UI scale (0.5-1)                        */
-  --headerH:100px;         /* fixed header height                     */
+  --zoom:1;              /* UI scale (0.5-1)                */
+  --headerH:100px;
 }
 @media(max-width:600px){:root{--gap:4px}}
 
-/* ----------- GLOBAL ELEMENTS ------------ */
+/* ====== GLOBAL ====== */
 *{box-sizing:border-box;margin:0;padding:0}
 body{
-  font-family:'Inter',sans-serif;background:var(--bg);color:#3e3d3a;
+  font-family:Inter,sans-serif;background:var(--bg);color:#3e3d3a;
   min-height:100vh;display:flex;flex-direction:column;align-items:center;
-  padding-top:var(--headerH);
+  padding-top:var(--headerH)
 }
 
-/* ----------- FIXED HEADER ------------ */
+/* ====== HEADER ====== */
 .header{
   position:fixed;top:0;left:0;right:0;height:var(--headerH);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:20px 24px 0;z-index:100;flex-wrap:wrap;
-  background:transparent;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
+  padding:20px 24px 0;z-index:100;background:transparent;
+  pointer-events:none                            /* клики сквозь пустые места */
 }
+.header *{pointer-events:auto}
+
 .hamburger{font-size:2rem;border:none;background:transparent;cursor:pointer}
 .title{font-size:2.8rem;font-weight:600;margin-left:12px}
 
-.leftControls{display:flex;align-items:center;gap:18px}
-.rightControls{display:flex;align-items:center;gap:16px}
+.leftControls{display:flex;gap:18px;align-items:center}
+.rightControls{display:flex;gap:16px;align-items:center}
 @media(max-width:600px){
   .rightControls{flex-direction:column;align-items:flex-end;gap:8px;margin-top:8px}
 }
 #helpLink{
-  font-size:1rem;text-decoration:none;color:#3e3d3a;opacity:.75;transition:opacity .15s
+  font-size:1rem;color:#3e3d3a;text-decoration:none;opacity:.75;transition:.15s
 }
 #helpLink:hover{opacity:1}
 #newBtn{
   cursor:pointer;padding:10px 22px;border:none;border-radius:8px;
-  background:#9088ff;color:#fff;font-weight:600;
+  background:#9088ff;color:#fff;font-weight:600
 }
 
-/* ----------- SETTINGS PANEL ------------ */
+/* ====== SETTINGS PANEL ====== */
 #panel{
   position:fixed;top:0;left:0;height:100%;width:var(--panelW);
-  background:#fff;border-right:1px solid #dadada;transform:translateX(-100%);
-  transition:transform .25s ease;z-index:90;padding:90px 22px 30px;
+  background:#fff;border-right:1px solid #dadada;
+  transform:translateX(-100%);transition:.25s ease;z-index:90;
+  padding:90px 22px 30px
 }
 #panel.open{transform:translateX(0)}
-#setTitle{font-size:1.3rem;font-weight:600;margin-bottom:22px}
+
 .setting{margin-bottom:22px;display:flex;align-items:center;justify-content:space-between}
 .setting label{font-weight:600}
 
@@ -84,7 +86,7 @@ body{
   position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:26px;transition:.2s
 }
 .slider:before{
-  content:'';position:absolute;left:2px;bottom:2px;height:22px;width:22px;
+  content:'';position:absolute;left:2px;bottom:2px;width:22px;height:22px;
   background:#fff;border-radius:50%;transition:.2s
 }
 input:checked + .slider{background:var(--accent)}
@@ -99,47 +101,38 @@ input:checked + .slider:before{transform:translateX(20px)}
 .stepper button:hover{background:#d4d4d4}
 .stepper span{min-width:48px;text-align:center;font-weight:600;font-size:1.05rem}
 
-/* code input + buttons */
+/* code input */
 .codeInputWrap{flex-direction:column;align-items:stretch;gap:8px}
 .codeInputWrap input{
-  padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-family:monospace;width:100%;
+  padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-family:monospace;width:100%
 }
 .codeButtons{display:flex;gap:8px;margin-top:8px}
 #copyCodeBtn,#loadCodeBtn{
   cursor:pointer;padding:6px 14px;border:none;border-radius:6px;font-weight:600
 }
-#copyCodeBtn{background:#e0e0e0;color:#3e3d3a;transition:background .15s,color .15s}
+#copyCodeBtn{background:#e0e0e0;color:#3e3d3a;transition:.15s}
 #copyCodeBtn.copied{background:var(--accent);color:#fff}
 #loadCodeBtn{background:var(--accent);color:#fff}
 
-/* feedback link */
+/* panel link */
 .panelLink{
   display:block;margin-top:40px;text-align:center;font-size:1rem;font-weight:600;
-  text-decoration:none;color:#3e3d3a;opacity:.75;transition:opacity .15s
+  color:#3e3d3a;text-decoration:none;opacity:.75;transition:.15s
 }
 .panelLink:hover{opacity:1}
 
-/* ----------- GAME LAYOUT ------------ */
+/* ====== GAME LAYOUT ====== */
 #app{
   display:flex;flex-direction:column;align-items:center;width:100%;
   transform:scale(var(--zoom));transform-origin:top center;
-  margin-top:calc(26px / var(--zoom));
+  margin-top:calc(26px / var(--zoom))
 }
 
-.editWrap{
-  display:flex;flex-wrap:wrap;gap:calc(var(--gap)*2);
-  align-items:flex-start;justify-content:center
-}
-.boardGroup{
-  display:flex;flex-wrap:nowrap;gap:calc(var(--gap)*2);align-items:flex-start
-}
-.rowToggles{
-  display:grid;grid-template-rows:repeat(var(--n),var(--size));gap:var(--gap);flex-shrink:0
-}
+.editWrap{display:flex;flex-wrap:wrap;gap:calc(var(--gap)*2);justify-content:center}
+.boardGroup{display:flex;gap:calc(var(--gap)*2);align-items:flex-start}
+.rowToggles{display:grid;grid-template-rows:repeat(var(--n),var(--size));gap:var(--gap);flex-shrink:0}
 .boardArea{display:flex;flex-direction:column;gap:var(--gap);align-items:center}
-.colToggles{
-  display:grid;grid-template-columns:repeat(var(--n),var(--size));gap:var(--gap);margin-top:var(--gap)
-}
+.colToggles{display:grid;grid-template-columns:repeat(var(--n),var(--size));gap:var(--gap);margin-top:var(--gap)}
 
 /* card containers */
 .gridCard{
@@ -158,7 +151,7 @@ input:checked + .slider:before{transform:translateX(20px)}
   grid-template-rows:repeat(var(--n),14px);gap:2px
 }
 
-/* cells */
+/* tiles */
 .tile{
   width:100%;height:100%;border-radius:8px;display:flex;align-items:center;justify-content:center;
   transition:background .1s;font-size:.9rem;user-select:none
@@ -168,7 +161,7 @@ input:checked + .slider:before{transform:translateX(20px)}
 .tile.good{background:var(--accent);color:#fff}
 .tile.bad {background:var(--bad)}
 
-/* row/col toggles */
+/* toggles */
 .toggle{
   width:var(--size);height:var(--size);border-radius:8px;border:2px solid var(--accent);
   background:transparent;cursor:pointer;transition:.1s
@@ -216,101 +209,72 @@ input:checked + .slider:before{transform:translateX(20px)}
 .helpBox h2{margin-bottom:14px;font-size:1.4rem}
 .helpBox ul{margin-left:18px;margin-bottom:20px;font-size:.95rem;line-height:1.35}
 .helpBox li{margin-bottom:10px}
-.helpBox .tile{
-  width:18px;height:18px;margin-right:6px;vertical-align:middle;display:inline-block
-}
+.helpBox .tile{width:18px;height:18px;margin-right:6px;vertical-align:middle;display:inline-block}
 #closeHelp{
   cursor:pointer;padding:8px 18px;border:none;border-radius:8px;
   background:var(--accent);color:#fff;font-weight:600
 }
 
 /* footer */
-.footer{
-  margin:24px 0 12px;font-size:.85rem;color:#3e3d3a;opacity:.6;text-align:center
-}
+.footer{margin:24px 0 12px;font-size:.85rem;color:#3e3d3a;opacity:.6;text-align:center}
 #tgLink{color:inherit;text-decoration:none;border-bottom:1px dashed currentColor}
 #tgLink:hover{opacity:.8}
 </style>
 </head>
-<body>
 
-<!-- ---------- HEADER ---------- -->
+<body>
+<!-- ====== HEADER ====== -->
 <div class="header">
   <div class="leftControls">
     <button id="menuBtn" class="hamburger">☰</button>
     <div class="title">BMF</div>
   </div>
-
   <div class="rightControls">
     <a id="helpLink" href="#!">How&nbsp;to&nbsp;play</a>
     <button id="newBtn">New Game</button>
   </div>
 </div>
 
-<!-- ---------- SETTINGS PANEL ---------- -->
+<!-- ====== SETTINGS PANEL ====== -->
 <div id="panel">
-  <!-- <div id="setTitle">Settings</div> -->
-
   <!-- combine mode -->
   <div class="setting">
     <label>Combine</label>
     <div class="modeToggle">
-      <label class="modeBtn" id="orBtn"><input type="radio" name="mode" value="bool">OR</label>
-      <label class="modeBtn checked" id="xorBtn"><input type="radio" name="mode" value="mod" checked>XOR</label>
+      <label class="modeBtn" id="orBtn"><input type="radio" hidden name="mode" value="bool">OR</label>
+      <label class="modeBtn checked" id="xorBtn"><input type="radio" hidden name="mode" value="mod" checked>XOR</label>
     </div>
   </div>
-
   <!-- board size -->
   <div class="setting">
     <label>Board size</label>
-    <div class="stepper" data-target="n">
-      <button class="minus">-</button><span id="nVal">5</span><button class="plus">+</button>
-    </div>
+    <div class="stepper" data-target="n"><button class="minus">-</button><span id="nVal">5</span><button class="plus">+</button></div>
   </div>
-
   <!-- layers -->
   <div class="setting">
     <label>Layers</label>
-    <div class="stepper" data-target="r">
-      <button class="minus">-</button><span id="rVal">3</span><button class="plus">+</button>
-    </div>
+    <div class="stepper" data-target="r"><button class="minus">-</button><span id="rVal">3</span><button class="plus">+</button></div>
   </div>
-
-  <!-- preview toggle -->
+  <!-- preview -->
   <div class="setting">
     <label>Preview</label>
-    <label class="switch">
-      <input type="checkbox" id="previewToggle" checked>
-      <span class="slider"></span>
-    </label>
+    <label class="switch"><input type="checkbox" id="previewToggle" checked><span class="slider"></span></label>
   </div>
-
   <!-- scale -->
   <div class="setting">
     <label>Scale</label>
-    <div class="stepper" data-target="zoom">
-      <button class="minus">-</button><span id="zoomVal">100&nbsp;%</span><button class="plus">+</button>
-    </div>
+    <div class="stepper" data-target="zoom"><button class="minus">-</button><span id="zoomVal">100&nbsp;%</span><button class="plus">+</button></div>
   </div>
-
-  <!-- puzzle code input -->
+  <!-- code -->
   <div class="setting codeInputWrap">
     <label for="codeInput">Puzzle code</label>
-    <input id="codeInput" type="text" placeholder="Enter / will show code here">
-    <div class="codeButtons">
-      <button id="copyCodeBtn">Copy Code</button>
-      <button id="loadCodeBtn">Load Code</button>
-    </div>
+    <input id="codeInput" placeholder="Enter / will show code here">
+    <div class="codeButtons"><button id="copyCodeBtn">Copy Code</button><button id="loadCodeBtn">Load Code</button></div>
   </div>
-
-  <!-- feedback link -->
-  <a id="fbLink" class="panelLink" href="https://forms.gle/tAUDAFZZKGTbSEpk9"
-     target="_blank" rel="noopener noreferrer">
-    Give Feedback
-  </a>
+  <a class="panelLink" href="https://forms.gle/tAUDAFZZKGTbSEpk9" target="_blank" rel="noopener">Give Feedback</a>
 </div>
 
-<!-- ---------- HELP MODAL ---------- -->
+<!-- ====== HELP MODAL ====== -->
 <div id="helpModal" class="helpModal">
   <div class="helpBox">
     <h2>How to play</h2>
@@ -321,313 +285,172 @@ input:checked + .slider:before{transform:translateX(20px)}
       <li><b>Colours:</b><br>
         <span class="tile want"></span> Need to fill<br>
         <span class="tile good"></span> Correct<br>
-        <span class="tile bad"></span> Incorrect
-      </li>
+        <span class="tile bad"></span> Incorrect</li>
       <li>In <b>Settings (☰)</b> select combine mode, board size and number of layers.</li>
     </ul>
     <button id="closeHelp">Got it!</button>
   </div>
 </div>
 
-<!-- ---------- GAME ---------- -->
+<!-- ====== GAME ====== -->
 <div id="app">
   <div class="editWrap">
-
-    <!-- board + toggles -->
     <div class="boardGroup">
       <div id="rowToggles" class="rowToggles"></div>
-
       <div class="boardArea">
         <div class="gridCard"><div id="editGrid" class="grid main"></div></div>
         <div id="colToggles" class="colToggles"></div>
       </div>
     </div>
-
-    <!-- previews -->
     <div id="previews" class="previewWrap"></div>
   </div>
-
   <div class="btnbar"><button id="clearBtn">Clear</button></div>
   <div id="cards"></div>
 </div>
 
-<!-- ---------- WIN OVERLAY ---------- -->
+<!-- solved overlay -->
 <div id="successMsg"><div>✔ Correct!</div></div>
 
-<!-- ---------- FOOTER ---------- -->
-<div class="footer">
-  <a id="tgLink" href="https://t.me/qdiag" target="_blank" rel="noopener noreferrer">
-    Telegram&nbsp;channel&nbsp;@qdiag
-  </a>
-</div>
+<!-- footer -->
+<div class="footer"><a id="tgLink" href="https://t.me/qdiag" target="_blank" rel="noopener">Telegram&nbsp;channel&nbsp;@qdiag</a></div>
 
 <script>
-/* ---------- PARAMETERS ---------- */
-let n=5, r=3, mode='mod';
-let showPreview=true;
-let zoom=1;
-let state, target;
+/* ====== SETTINGS & STATE ====== */
+const settings={n:5,r:3,mode:'mod',zoom:1,showPreview:true};
+let solved=false,state,target;
+const $=sel=>document.querySelector(sel);
 
-/* ---------- HELPERS ---------- */
-const $=q=>document.querySelector(q);
+/* ====== BIT / HEX ====== */
+const bitsToHex=b=>{const p=(4-b.length%4)%4;if(p)b+='0'.repeat(p);return b.match(/.{4}/g).map(x=>parseInt(x,2).toString(16).toUpperCase()).join('')};
+const hexToBits=h=>{let r='';for(const c of h.toUpperCase())r+=parseInt(c,16).toString(2).padStart(4,'0');return r};
+
+/* ====== HELPERS ====== */
+const matEq=(a,b)=>{for(let i=0;i<a.length;i++)for(let j=0;j<a.length;j++)if(a[i][j]!==b[i][j])return false;return true};
 const rnd=()=>Math.random()<.5?1:0;
-const eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const calcSize=()=>{const g=innerWidth<=600?4:6,max=innerWidth<=600?innerWidth*0.9:500,raw=(max-(settings.n-1)*g)/settings.n;return Math.max(22,Math.min(raw,innerWidth<=600?36:46))};
+const applyCSS=()=>{document.documentElement.style.setProperty('--n',settings.n);document.documentElement.style.setProperty('--size',calcSize()+'px');document.documentElement.style.setProperty('--gap',(innerWidth<=600?4:6)+'px');document.documentElement.style.setProperty('--zoom',settings.zoom)};
 
-/* optimal cell size */
-function calcSize(){
-  const gap=window.innerWidth<=600?4:6;
-  const maxBoardW=window.innerWidth<=600?window.innerWidth*0.9:500;
-  const raw=(maxBoardW-(n-1)*gap)/n;
-  return Math.max(22,Math.min(raw,window.innerWidth<=600?36:46));
-}
-function applyCSS(){
-  const size=calcSize();
-  document.documentElement.style.setProperty('--n',n);
-  document.documentElement.style.setProperty('--size',size+'px');
-  document.documentElement.style.setProperty('--gap',(window.innerWidth<=600?4:6)+'px');
-  document.documentElement.style.setProperty('--zoom',zoom);
-}
+/* universal grid builder */
+const gridHTML=(n,getCls)=>Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>`<div class="tile ${getCls(i,j)}"></div>`).join('')).join('');
+const tileCls=(t,p,c)=>settings.mode==='bool'
+  ?(t?(c?'good':(p?'zero':'want')):(c?'bad':'zero'))
+  :(t^(p^c)?(c?'good':'want'):(c?'bad':'zero'));
 
-/* ---------- HEX EN-/DECODING ---------- */
-function encodeTarget(){
-  // 1) board size (4 бит)   2) layers (4 бит)   3) mode (4 бит, 0=OR,1=XOR)   4) cells
-  let bits=n.toString(2).padStart(4,'0');
-  bits+=r.toString(2).padStart(4,'0');
-  bits+=(mode==='mod'?1:0).toString(2).padStart(4,'0');
-  for(let i=0;i<n;i++)for(let j=0;j<n;j++)bits+=target[i][j];
-  const pad=(4-(bits.length%4))%4;
-  if(pad)bits+='0'.repeat(pad);
-  return bits.match(/.{4}/g)
-             .map(b=>parseInt(b,2).toString(16).toUpperCase())
-             .join('');
-}
-
-function loadFromCode(code){
-  if(!/^[0-9A-Fa-f]+$/.test(code))return false;
-  // hex → bit string
-  let bits='';
-  for(const ch of code.toUpperCase())
-    bits+=parseInt(ch,16).toString(2).padStart(4,'0');
-
-  if(bits.length<12)return false;           // нужно хотя бы 12 бит для метаданных
-
-  const size =parseInt(bits.slice(0,4),2);  // board size
-  const layers=parseInt(bits.slice(4,8),2); // layers
-  const modeBit=parseInt(bits.slice(8,12),2);
-
-  if(size<2||size>10)return false;
-  if(layers<1||layers>6)return false;
-  if(modeBit!==0&&modeBit!==1)return false;
-
-  const cells=size*size;
-  const boardBits=bits.slice(12,12+cells).padEnd(cells,'0');
-
-  // сформировать матрицу цели
-  const newTarget=Array.from({length:size},(_,i)=>
-    Array.from({length:size},(_,j)=>+boardBits[i*size+j])
-  );
-
-  // применяем параметры к игре
-  n=size;
-  r=layers;
-  mode=modeBit? 'mod':'bool';
-
+/* ====== ENCODE / LOAD ====== */
+const encode=()=>{let bits=settings.n.toString(2).padStart(4,'0')+settings.r.toString(2).padStart(4,'0')+(settings.mode==='mod'?1:0).toString(2).padStart(4,'0');for(let i=0;i<settings.n;i++)for(let j=0;j<settings.n;j++)bits+=target[i][j];return bitsToHex(bits)};
+const loadFromCode=code=>{
+  if(!/^[0-9A-F]+$/i.test(code))return false;
+  const bits=hexToBits(code);if(bits.length<12)return false;
+  const n=parseInt(bits.slice(0,4),2),r=parseInt(bits.slice(4,8),2),mb=parseInt(bits.slice(8,12),2);
+  if(n<2||n>10||r<1||r>6||![0,1].includes(mb))return false;
+  const cells=n*n,boardBits=bits.slice(12,12+cells).padEnd(cells,'0');
+  target=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>+boardBits[i*n+j]));
+  Object.assign(settings,{n,r,mode:mb?'mod':'bool'});
   applyCSS();
-  updateModeButtons();
-  $('#nVal').textContent=n;
-  $('#rVal').textContent=r;
+  initState();solved=false;updateModeButtons();$('#nVal').textContent=n;$('#rVal').textContent=r;render();return true
+};
 
-  target=newTarget;
-  initState();          // пересоздаём U,V с новым r
-  render();
+/* ====== STATE ====== */
+const initState=()=>{state={U:Array.from({length:settings.r},()=>Array(settings.n).fill(0)),V:Array.from({length:settings.r},()=>Array(settings.n).fill(0)),cur:0}};
+const genTarget=()=>{
+  const tU=Array.from({length:settings.r},()=>Array.from({length:settings.n},rnd)),
+        tV=Array.from({length:settings.r},()=>Array.from({length:settings.n},rnd));
+  target=Array.from({length:settings.n},()=>Array(settings.n).fill(0));
+  for(let k=0;k<settings.r;k++)for(let i=0;i<settings.n;i++)if(tU[k][i])for(let j=0;j<settings.n;j++)if(tV[k][j])settings.mode==='bool'?target[i][j]=1:target[i][j]^=1
+};
+const player=()=>{
+  const P=Array.from({length:settings.n},()=>Array(settings.n).fill(0));
+  for(let k=0;k<settings.r;k++)for(let i=0;i<settings.n;i++)if(state.U[k][i])for(let j=0;j<settings.n;j++)if(state.V[k][j])settings.mode==='bool'?P[i][j]=1:P[i][j]^=1;
+  return P
+};
 
-  $('#codeInput').value=code.toUpperCase();
-  return true;
-}
-
-/* ---------- STATE + TARGET ---------- */
-function initState(){
-  state={U:Array.from({length:r},()=>Array(n).fill(0)),
-         V:Array.from({length:r},()=>Array(n).fill(0)),cur:0};
-}
-function genTarget(){
-  const tU=Array.from({length:r},()=>Array.from({length:n},rnd));
-  const tV=Array.from({length:r},()=>Array.from({length:n},rnd));
-  target=Array.from({length:n},()=>Array(n).fill(0));
-  for(let k=0;k<r;k++)
-    for(let i=0;i<n;i++)if(tU[k][i])
-      for(let j=0;j<n;j++)if(tV[k][j])
-        mode==='bool'?target[i][j]=1:target[i][j]^=1;
-}
-function player(){
-  const P=Array.from({length:n},()=>Array(n).fill(0));
-  for(let k=0;k<r;k++)
-    for(let i=0;i<n;i++)if(state.U[k][i])
-      for(let j=0;j<n;j++)if(state.V[k][j])
-        mode==='bool'?P[i][j]=1:P[i][j]^=1;
-  return P;
-}
-
-/* класс плитки */
-function cls(t,p,c){
-  if(mode==='bool'){
-    if(t)return c?'good':(p?'zero':'want');
-    return c?'bad':'zero';
-  }
-  const diff=t^(p^c);
-  return diff?(c?'good':'want'):(c?'bad':'zero');
-}
-function miniGrid(arr,onCls){
-  return Array.from({length:n},(_,i)=>
-    Array.from({length:n},(_,j)=>
-      `<div class="tile ${arr[i][j]?onCls:'zero'}"></div>`).join('')
-  ).join('');
-}
-
-/* ---------- RENDER ---------- */
-function render(){
+/* ====== RENDER ====== */
+const render=()=>{
   const P=player(),k=state.cur;
-
-  /* main board */
-  $('#editGrid').innerHTML=Array.from({length:n},(_,i)=>
-    Array.from({length:n},(_,j)=>{
-      const t=target[i][j],p=P[i][j],c=state.U[k][i]&&state.V[k][j];
-      return `<div class="tile ${cls(t,p,c)}"></div>`;
-    }).join('')
-  ).join('');
-
-  /* row toggles */
-  $('#rowToggles').innerHTML=state.U[k].map((v,i)=>
-    `<button class="toggle ${v?'on':''}" data-row="${i}"></button>`).join('');
-
-  /* column toggles */
-  $('#colToggles').innerHTML=state.V[k].map((v,j)=>
-    `<button class="toggle ${v?'on':''}" data-col="${j}"></button>`).join('');
-
-  /* layer cards */
-  $('#cards').innerHTML=Array.from({length:r},(_,d)=>{
-    const mini=Array.from({length:n},(_,i)=>
-      Array.from({length:n},(_,j)=>{
-        const t=target[i][j],p=P[i][j],c=state.U[d][i]&&state.V[d][j];
-        return `<div class="tile ${cls(t,p,c)}"></div>`;
-      }).join('')
-    ).join('');
-    return `<div class="card ${d===k?'active':''}" data-card="${d}">
-              <div class="grid mini">${mini}</div>
-            </div>`;
+  $('#editGrid').innerHTML=gridHTML(settings.n,(i,j)=>tileCls(target[i][j],P[i][j],state.U[k][i]&&state.V[k][j]));
+  $('#rowToggles').innerHTML=state.U[k].map((v,i)=>`<button class="toggle ${v?'on':''}" data-row="${i}"></button>`).join('');
+  $('#colToggles').innerHTML=state.V[k].map((v,j)=>`<button class="toggle ${v?'on':''}" data-col="${j}"></button>`).join('');
+  $('#cards').innerHTML=Array.from({length:settings.r},(_,d)=>{
+    const mini=gridHTML(settings.n,(i,j)=>tileCls(target[i][j],P[i][j],state.U[d][i]&&state.V[d][j]));
+    return `<div class="card ${d===k?'active':''}" data-card="${d}"><div class="grid mini">${mini}</div></div>`
   }).join('');
+  $('#previews').innerHTML=settings.showPreview
+    ?`<div class="gridCard"><div class="label">Target</div><div class="grid mini">${gridHTML(settings.n,(i,j)=>target[i][j]?'good':'zero')}</div></div>
+       <div class="gridCard"><div class="label">You</div><div class="grid mini">${gridHTML(settings.n,(i,j)=>P[i][j]?'good':'zero')}</div></div>`
+    :'';
+  if(!solved&&matEq(P,target)){solved=true;$('#successMsg').style.display='flex'}
+  else if(solved&&!matEq(P,target)){solved=false;$('#successMsg').style.display='none'}
+  $('#codeInput').value=encode()
+};
 
-  /* previews */
-  if(showPreview){
-    $('#previews').innerHTML=
-      `<div class="gridCard">
-         <div class="label">Target</div>
-         <div class="grid mini">${miniGrid(target,'good')}</div>
-       </div>
-       <div class="gridCard">
-         <div class="label">You</div>
-         <div class="grid mini">${miniGrid(P,'good')}</div>
-       </div>`;
-  }else{$('#previews').innerHTML='';}
-
-  /* win overlay */
-  $('#successMsg').style.display=eq(P,target)?'flex':'none';
-
-  /* show code */
-  $('#codeInput').value=encodeTarget();
-}
-
-/* ---------- EVENT HANDLERS ---------- */
+/* ====== UI EVENTS ====== */
 $('#menuBtn').onclick=()=>$('#panel').classList.toggle('open');
-$('#newBtn').onclick=()=>{newGame();$('#panel').classList.remove('open');};
+$('#newBtn').onclick=()=>{newGame();$('#panel').classList.remove('open')};
 
-/* copy code with visual feedback */
-$('#copyCodeBtn').onclick=()=>{
-  const code=encodeTarget();
-  navigator.clipboard.writeText(code).then(()=>{
-    const btn=$('#copyCodeBtn');
-    btn.textContent='Copy Code';
-    btn.classList.add('copied');
-    clearTimeout(btn.timer);
-    btn.timer=setTimeout(()=>{
-      btn.textContent='Copy Code';
-      btn.classList.remove('copied');
-    },300);
-  });
-};
+/* hide overlay on click */
+$('#successMsg').onclick = () => { $('#successMsg').style.display = 'none'; };
 
-$('#clearBtn').onclick=()=>{
-  state.U.forEach(u=>u.fill(0));
-  state.V.forEach(v=>v.fill(0));
-  render();
-};
+/* delegated toggles */
+$('#app').addEventListener('click',e=>{
+  const t=e.target.closest('[data-row],[data-col],[data-card]');if(!t)return;
+  if(t.dataset.row!==undefined)state.U[state.cur][+t.dataset.row]^=1;
+  else if(t.dataset.col!==undefined)state.V[state.cur][+t.dataset.col]^=1;
+  else state.cur=+t.dataset.card;
+  render()
+});
 
-/* row / col toggles */
-$('#rowToggles').onclick=e=>{
-  const i=e.target.dataset.row;if(i!==undefined){state.U[state.cur][+i]^=1;render();}
-};
-$('#colToggles').onclick=e=>{
-  const j=e.target.dataset.col;if(j!==undefined){state.V[state.cur][+j]^=1;render();}
-};
-$('#cards').onclick=e=>{
-  const c=e.target.closest('.card');if(c){state.cur=+c.dataset.card;render();}
-};
-$('#successMsg').onclick=()=>$('#successMsg').style.display='none';
+/* clear */
+$('#clearBtn').onclick=()=>{state.U.forEach(u=>u.fill(0));state.V.forEach(v=>v.fill(0));solved=false;render()};
 
-/* mode switch */
-function setMode(newMode){mode=newMode;updateModeButtons();newGame();}
-function updateModeButtons(){
-  $('#orBtn').classList.toggle('checked',mode==='bool');
-  $('#xorBtn').classList.toggle('checked',mode==='mod');
-}
-$('#orBtn').onclick =()=>setMode('bool');
-$('#xorBtn').onclick=()=>setMode('mod');
+/* clipboard */
+$('#copyCodeBtn').onclick=()=>{navigator.clipboard.writeText(encode()).then(()=>{const b=$('#copyCodeBtn');b.textContent='Copied';b.classList.add('copied');setTimeout(()=>{b.textContent='Copy Code';b.classList.remove('copied')},300)})};
+
+/* load code + Enter */
+$('#loadCodeBtn').onclick=()=>{if(!loadFromCode($('#codeInput').value.trim()))alert('Invalid code')};
+$('#codeInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loadCodeBtn').click()});
+
+/* mode */
+const updateModeButtons=()=>{$('#orBtn').classList.toggle('checked',settings.mode==='bool');$('#xorBtn').classList.toggle('checked',settings.mode==='mod')};
+$('#orBtn').onclick =()=>{
+  settings.mode='bool';
+  updateModeButtons();
+  newGame();
+};
+$('#xorBtn').onclick =()=>{
+  settings.mode='mod';
+  updateModeButtons();
+  newGame();
+};
 
 /* steppers */
 document.querySelectorAll('.stepper').forEach(st=>{
   st.onclick=e=>{
-    const b=e.target;if(b.tagName!=='BUTTON')return;
-    const t=st.dataset.target,inc=b.classList.contains('plus')?1:-1;
-    if(t==='n'){
-      n=Math.max(2,Math.min(10,n+inc));
-      $('#nVal').textContent=n;newGame();
-    }else if(t==='r'){
-      r=Math.max(1,Math.min(6,r+inc));
-      $('#rVal').textContent=r;newGame();
-    }else if(t==='zoom'){
-      const perc=Math.round((zoom*100)+inc*5);
-      const clamped=Math.max(50,Math.min(100,perc));
-      zoom=clamped/100;
-      $('#zoomVal').textContent=clamped+' %';applyCSS();
+    const inc=e.target.classList.contains('plus')?1:e.target.classList.contains('minus')?-1:0;if(!inc)return;
+    switch(st.dataset.target){
+      case 'n':settings.n=Math.max(2,Math.min(10,settings.n+inc));$('#nVal').textContent=settings.n;newGame();break;
+      case 'r':settings.r=Math.max(1,Math.min(6,settings.r+inc));$('#rVal').textContent=settings.r;newGame();break;
+      case 'zoom':
+        const p=Math.round(settings.zoom*100)+inc*5;settings.zoom=Math.max(.5,Math.min(1,p/100));
+        $('#zoomVal').textContent=Math.round(settings.zoom*100)+' %';applyCSS();break
     }
-  };
+  }
 });
 
 /* preview toggle */
-$('#previewToggle').onchange=e=>{showPreview=e.target.checked;render();};
+$('#previewToggle').onchange=e=>{settings.showPreview=e.target.checked;render()};
 
-/* load code (панель не закрываем) */
-$('#loadCodeBtn').onclick=()=>{
-  const code=$('#codeInput').value.trim();
-  if(!loadFromCode(code))alert('Invalid puzzle code');
-};
-
-/* help modal */
-$('#helpLink').onclick=e=>{e.preventDefault();$('#helpModal').style.display='flex';};
+/* modal */
+$('#helpLink').onclick=e=>{e.preventDefault();$('#helpModal').style.display='flex'};
 $('#closeHelp').onclick=()=>$('#helpModal').style.display='none';
-$('#helpModal').onclick=e=>{if(e.target.id==='helpModal')$('#helpModal').style.display='none';};
+$('#helpModal').onclick=e=>{if(e.target.id==='helpModal')$('#helpModal').style.display='none'};
 
-/* ---------- BOOTSTRAP ---------- */
-function newGame(){applyCSS();initState();genTarget();render();}
-window.addEventListener('resize',()=>{applyCSS();render();});
+/* resize */
+addEventListener('resize',()=>{applyCSS();render()});
 
-/* init */
-$('#nVal').textContent=n;
-$('#rVal').textContent=r;
-$('#zoomVal').textContent='100 %';
-updateModeButtons();
-applyCSS();
-newGame();
+/* ====== BOOTSTRAP ====== */
+const newGame=()=>{applyCSS();initState();genTarget();solved=false;render()};
+$('#nVal').textContent=settings.n;$('#rVal').textContent=settings.r;$('#zoomVal').textContent='100 %';
+applyCSS();updateModeButtons();newGame();
 </script>
 </body>
 </html>
