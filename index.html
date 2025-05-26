@@ -1,456 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>BMF Game</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="https://qdiag.xyz/bmf/favicon.png">
+  <meta charset="UTF-8">
+  <title>BMF Game</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<style>
-/* ====== VARIABLES ====== */
-:root{
-  --n:5;                 /* board size                      */
-  --size:46px;           /* board cell size                 */
-  --gap:6px;
-  --accent:#6c63ff;
-  --accent-light:#d6d8ff;
-  --bad:#ff6f6f;
-  --bg:#fafafa;
-  --tile-empty:#e9e9e9;
-  --panelW:260px;
-  --zoom:1;              /* UI scale (0.5-1)                */
-  --headerH:100px;
-}
-@media(max-width:600px){:root{--gap:4px}}
+  <!-- fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
-/* ====== GLOBAL ====== */
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:Inter,sans-serif;background:var(--bg);color:#3e3d3a;
-  min-height:100vh;display:flex;flex-direction:column;align-items:center;
-  padding-top:var(--headerH)
-}
+  <!-- favicon -->
+  <link rel="icon" type="image/png" href="https://qdiag.xyz/bmf/favicon.png">
 
-/* ====== HEADER ====== */
-.header{
-  position:fixed;top:0;left:0;right:0;height:var(--headerH);
-  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
-  padding:20px 24px 0;z-index:100;background:transparent;
-  pointer-events:none                            /* клики сквозь пустые места */
-}
-.header *{pointer-events:auto}
-
-.hamburger{font-size:2rem;border:none;background:transparent;cursor:pointer}
-.title{font-size:2.8rem;font-weight:600;margin-left:12px}
-
-.leftControls{display:flex;gap:18px;align-items:center}
-.rightControls{display:flex;gap:16px;align-items:center}
-@media(max-width:600px){
-  .rightControls{flex-direction:column;align-items:flex-end;gap:8px;margin-top:8px}
-}
-#helpLink{
-  font-size:1rem;color:#3e3d3a;text-decoration:none;opacity:.75;transition:.15s
-}
-#helpLink:hover{opacity:1}
-#newBtn{
-  cursor:pointer;padding:10px 22px;border:none;border-radius:8px;
-  background:#9088ff;color:#fff;font-weight:600
-}
-
-/* ====== SETTINGS PANEL ====== */
-#panel{
-  position:fixed;top:0;left:0;height:100%;width:var(--panelW);
-  background:#fff;border-right:1px solid #dadada;
-  transform:translateX(-100%);transition:.25s ease;z-index:90;
-  padding:90px 22px 30px
-}
-#panel.open{transform:translateX(0)}
-
-.setting{margin-bottom:22px;display:flex;align-items:center;justify-content:space-between}
-.setting label{font-weight:600}
-
-/* toggle OR/XOR */
-.modeToggle{display:flex;gap:6px}
-.modeToggle input{display:none}
-.modeBtn{
-  padding:6px 14px;border:2px solid var(--accent);border-radius:6px;cursor:pointer;
-  background:#fff;font-weight:600;transition:.15s
-}
-.modeBtn.checked{background:var(--accent);color:#fff}
-
-/* switch */
-.switch{position:relative;display:inline-block;width:46px;height:26px}
-.switch input{opacity:0;width:0;height:0}
-.slider{
-  position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:26px;transition:.2s
-}
-.slider:before{
-  content:'';position:absolute;left:2px;bottom:2px;width:22px;height:22px;
-  background:#fff;border-radius:50%;transition:.2s
-}
-input:checked + .slider{background:var(--accent)}
-input:checked + .slider:before{transform:translateX(20px)}
-
-/* steppers */
-.stepper{display:flex;align-items:center;gap:12px}
-.stepper button{
-  width:36px;height:36px;border:none;border-radius:8px;background:#e0e0e0;
-  font-size:1.2rem;cursor:pointer;font-weight:600;transition:background .12s
-}
-.stepper button:hover{background:#d4d4d4}
-.stepper span{min-width:48px;text-align:center;font-weight:600;font-size:1.05rem}
-
-/* code input */
-.codeInputWrap{flex-direction:column;align-items:stretch;gap:8px}
-.codeInputWrap input{
-  padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-family:monospace;width:100%
-}
-.codeButtons{display:flex;gap:8px;margin-top:8px}
-#copyCodeBtn,#loadCodeBtn{
-  cursor:pointer;padding:6px 14px;border:none;border-radius:6px;font-weight:600
-}
-#copyCodeBtn{background:#e0e0e0;color:#3e3d3a;transition:.15s}
-#copyCodeBtn.copied{background:var(--accent);color:#fff}
-#loadCodeBtn{background:var(--accent);color:#fff}
-
-/* panel link */
-.panelLink{
-  display:block;margin-top:40px;text-align:center;font-size:1rem;font-weight:600;
-  color:#3e3d3a;text-decoration:none;opacity:.75;transition:.15s
-}
-.panelLink:hover{opacity:1}
-
-/* ====== GAME LAYOUT ====== */
-#app{
-  display:flex;flex-direction:column;align-items:center;width:100%;
-  transform:scale(var(--zoom));transform-origin:top center;
-  margin-top:calc(26px / var(--zoom))
-}
-
-.editWrap{display:flex;flex-wrap:wrap;gap:calc(var(--gap)*2);justify-content:center}
-.boardGroup{display:flex;gap:calc(var(--gap)*2);align-items:flex-start}
-.rowToggles{display:grid;grid-template-rows:repeat(var(--n),var(--size));gap:var(--gap);flex-shrink:0}
-.boardArea{display:flex;flex-direction:column;gap:var(--gap);align-items:center}
-.colToggles{display:grid;grid-template-columns:repeat(var(--n),var(--size));gap:var(--gap);margin-top:var(--gap)}
-
-/* card containers */
-.gridCard{
-  padding:var(--gap);background:#fff;border:2px solid #dcdcdc;border-radius:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,.08)
-}
-
-/* grids */
-.grid{display:grid;gap:var(--gap)}
-.grid.main{
-  grid-template-columns:repeat(var(--n),var(--size));
-  grid-template-rows:repeat(var(--n),var(--size))
-}
-.grid.mini{
-  grid-template-columns:repeat(var(--n),14px);
-  grid-template-rows:repeat(var(--n),14px);gap:2px
-}
-
-/* tiles */
-.tile{
-  width:100%;height:100%;border-radius:8px;display:flex;align-items:center;justify-content:center;
-  transition:background .1s;font-size:.9rem;user-select:none
-}
-.tile.zero{background:var(--tile-empty)}
-.tile.want{background:var(--accent-light)}
-.tile.good{background:var(--accent);color:#fff}
-.tile.bad {background:var(--bad)}
-
-/* toggles */
-.toggle{
-  width:var(--size);height:var(--size);border-radius:8px;border:2px solid var(--accent);
-  background:transparent;cursor:pointer;transition:.1s
-}
-.toggle.on{background:var(--accent)}
-
-/* layer cards */
-#cards{display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;justify-content:center}
-.card{
-  cursor:pointer;padding:8px;border-radius:8px;border:2px solid transparent;transition:border .12s
-}
-.card.active{border-color:var(--accent)}
-
-/* buttons */
-.btnbar{margin:18px 0}
-#clearBtn{
-  cursor:pointer;padding:8px 22px;border:none;border-radius:8px;background:#e0e0e0;font-weight:600
-}
-
-/* previews */
-.previewWrap{display:flex;flex-direction:column;gap:var(--gap)}
-.previewWrap .label{font-weight:600;text-align:center;margin-bottom:4px}
-@media(max-width:600px){
-  .previewWrap{flex-direction:row;justify-content:center;width:100%;order:-1}
-}
-
-/* win overlay */
-#successMsg{
-  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-  backdrop-filter:blur(2px);background:rgba(0,0,0,.4);z-index:95
-}
-#successMsg div{
-  background:#fff;padding:40px 60px;border-radius:14px;font-size:2rem;font-weight:600
-}
-
-/* help modal */
-.helpModal{
-  display:none;position:fixed;inset:0;z-index:96;align-items:center;justify-content:center;
-  backdrop-filter:blur(3px);background:rgba(0,0,0,.45)
-}
-.helpBox{
-  max-width:320px;background:#fff;padding:30px 28px;border-radius:14px;
-  box-shadow:0 4px 12px rgba(0,0,0,.2)
-}
-.helpBox h2{margin-bottom:14px;font-size:1.4rem}
-.helpBox ul{margin-left:18px;margin-bottom:20px;font-size:.95rem;line-height:1.35}
-.helpBox li{margin-bottom:10px}
-.helpBox .tile{width:18px;height:18px;margin-right:6px;vertical-align:middle;display:inline-block}
-#closeHelp{
-  cursor:pointer;padding:8px 18px;border:none;border-radius:8px;
-  background:var(--accent);color:#fff;font-weight:600
-}
-
-/* footer */
-.footer{margin:24px 0 12px;font-size:.85rem;color:#3e3d3a;opacity:.6;text-align:center}
-#tgLink{color:inherit;text-decoration:none;border-bottom:1px dashed currentColor}
-#tgLink:hover{opacity:.8}
-</style>
+  <!-- styles -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-<!-- ====== HEADER ====== -->
-<div class="header">
-  <div class="leftControls">
-    <button id="menuBtn" class="hamburger">☰</button>
-    <div class="title">BMF</div>
-  </div>
-  <div class="rightControls">
-    <a id="helpLink" href="#!">How&nbsp;to&nbsp;play</a>
-    <button id="newBtn">New Game</button>
-  </div>
-</div>
-
-<!-- ====== SETTINGS PANEL ====== -->
-<div id="panel">
-  <!-- combine mode -->
-  <div class="setting">
-    <label>Combine</label>
-    <div class="modeToggle">
-      <label class="modeBtn" id="orBtn"><input type="radio" hidden name="mode" value="bool">OR</label>
-      <label class="modeBtn checked" id="xorBtn"><input type="radio" hidden name="mode" value="mod" checked>XOR</label>
+  <!-- ====== HEADER ====== -->
+  <div class="header">
+    <div class="leftControls">
+      <button id="menuBtn" class="hamburger">☰</button>
+      <div class="title">BMF</div>
+    </div>
+    <div class="rightControls">
+      <a id="helpLink" href="#!">How&nbsp;to&nbsp;play</a>
+      <button id="newBtn">New Game</button>
     </div>
   </div>
-  <!-- board size -->
-  <div class="setting">
-    <label>Board size</label>
-    <div class="stepper" data-target="n"><button class="minus">-</button><span id="nVal">5</span><button class="plus">+</button></div>
-  </div>
-  <!-- layers -->
-  <div class="setting">
-    <label>Layers</label>
-    <div class="stepper" data-target="r"><button class="minus">-</button><span id="rVal">3</span><button class="plus">+</button></div>
-  </div>
-  <!-- preview -->
-  <div class="setting">
-    <label>Preview</label>
-    <label class="switch"><input type="checkbox" id="previewToggle" checked><span class="slider"></span></label>
-  </div>
-  <!-- scale -->
-  <div class="setting">
-    <label>Scale</label>
-    <div class="stepper" data-target="zoom"><button class="minus">-</button><span id="zoomVal">100&nbsp;%</span><button class="plus">+</button></div>
-  </div>
-  <!-- code -->
-  <div class="setting codeInputWrap">
-    <label for="codeInput">Puzzle code</label>
-    <input id="codeInput" placeholder="Enter / will show code here">
-    <div class="codeButtons"><button id="copyCodeBtn">Copy Code</button><button id="loadCodeBtn">Load Code</button></div>
-  </div>
-  <a class="panelLink" href="https://forms.gle/tAUDAFZZKGTbSEpk9" target="_blank" rel="noopener">Give Feedback</a>
-</div>
 
-<!-- ====== HELP MODAL ====== -->
-<div id="helpModal" class="helpModal">
-  <div class="helpBox">
-    <h2>How to play</h2>
-    <ul>
-      <li>Cover cells to match the hidden pattern.</li>
-      <li>In each layer select rows and columns by outer boxes to fill intersections.</li>
-      <li>All layers are combined (<b>OR</b> or <b>XOR</b>) into the final pattern.</li>
-      <li><b>Colours:</b><br>
-        <span class="tile want"></span> Need to fill<br>
-        <span class="tile good"></span> Correct<br>
-        <span class="tile bad"></span> Incorrect</li>
-      <li>In <b>Settings (☰)</b> select combine mode, board size and number of layers.</li>
-    </ul>
-    <button id="closeHelp">Got it!</button>
-  </div>
-</div>
-
-<!-- ====== GAME ====== -->
-<div id="app">
-  <div class="editWrap">
-    <div class="boardGroup">
-      <div id="rowToggles" class="rowToggles"></div>
-      <div class="boardArea">
-        <div class="gridCard"><div id="editGrid" class="grid main"></div></div>
-        <div id="colToggles" class="colToggles"></div>
+  <!-- ====== SETTINGS PANEL ====== -->
+  <div id="panel">
+    <div class="setting">
+      <label>Combine</label>
+      <div class="modeToggle">
+        <label class="modeBtn" id="orBtn"><input type="radio" hidden name="mode" value="bool">OR</label>
+        <label class="modeBtn checked" id="xorBtn"><input type="radio" hidden name="mode" value="mod" checked>XOR</label>
       </div>
     </div>
-    <div id="previews" class="previewWrap"></div>
+
+    <div class="setting">
+      <label>Board size</label>
+      <div class="stepper" data-target="n">
+        <button class="minus">-</button><span id="nVal">5</span><button class="plus">+</button>
+      </div>
+    </div>
+
+    <div class="setting">
+      <label>Layers</label>
+      <div class="stepper" data-target="r">
+        <button class="minus">-</button><span id="rVal">3</span><button class="plus">+</button>
+      </div>
+    </div>
+
+    <div class="setting">
+      <label>Preview</label>
+      <label class="switch">
+        <input type="checkbox" id="previewToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting">
+      <label>Scale</label>
+      <div class="stepper" data-target="zoom">
+        <button class="minus">-</button><span id="zoomVal">100&nbsp;%</span><button class="plus">+</button>
+      </div>
+    </div>
+
+    <div class="setting codeInputWrap">
+      <label for="codeInput">Puzzle code</label>
+      <input id="codeInput" placeholder="Enter / will show code here">
+      <div class="codeButtons">
+        <button id="copyCodeBtn">Copy Code</button>
+        <button id="loadCodeBtn">Load Code</button>
+      </div>
+    </div>
+
+    <a class="panelLink" href="https://forms.gle/tAUDAFZZKGTbSEpk9" target="_blank" rel="noopener">Give Feedback</a>
   </div>
-  <div class="btnbar"><button id="clearBtn">Clear</button></div>
-  <div id="cards"></div>
-</div>
 
-<!-- solved overlay -->
-<div id="successMsg"><div>✔ Correct!</div></div>
+  <!-- ====== HELP MODAL ====== -->
+  <div id="helpModal" class="helpModal">
+    <div class="helpBox">
+      <h2>How to play</h2>
+      <ul>
+        <li>Cover cells to match the hidden pattern.</li>
+        <li>In each layer select rows and columns by outer boxes to fill intersections.</li>
+        <li>All layers are combined (<b>OR</b> or <b>XOR</b>) into the final pattern.</li>
+        <li><b>Colours:</b><br>
+          <span class="tile want"></span> Need to fill<br>
+          <span class="tile good"></span> Correct<br>
+          <span class="tile bad"></span> Incorrect</li>
+        <li>In <b>Settings (☰)</b> select combine mode, board size and number of layers.</li>
+      </ul>
+      <button id="closeHelp">Got it!</button>
+    </div>
+  </div>
 
-<!-- footer -->
-<div class="footer"><a id="tgLink" href="https://t.me/qdiag" target="_blank" rel="noopener">Telegram&nbsp;channel&nbsp;@qdiag</a></div>
+  <!-- ====== GAME ====== -->
+  <div id="app">
+    <div class="editWrap">
+      <div class="boardGroup">
+        <div id="rowToggles" class="rowToggles"></div>
+        <div class="boardArea">
+          <div class="gridCard">
+            <div id="editGrid" class="grid main"></div>
+          </div>
+          <div id="colToggles" class="colToggles"></div>
+        </div>
+      </div>
+      <div id="previews" class="previewWrap"></div>
+    </div>
 
-<script>
-/* ====== SETTINGS & STATE ====== */
-const settings={n:5,r:3,mode:'mod',zoom:1,showPreview:true};
-let solved=false,state,target;
-const $=sel=>document.querySelector(sel);
+    <div class="btnbar"><button id="clearBtn">Clear</button></div>
+    <div id="cards"></div>
+  </div>
 
-/* ====== BIT / HEX ====== */
-const bitsToHex=b=>{const p=(4-b.length%4)%4;if(p)b+='0'.repeat(p);return b.match(/.{4}/g).map(x=>parseInt(x,2).toString(16).toUpperCase()).join('')};
-const hexToBits=h=>{let r='';for(const c of h.toUpperCase())r+=parseInt(c,16).toString(2).padStart(4,'0');return r};
+  <!-- solved overlay -->
+  <div id="successMsg"><div>✔ Correct!</div></div>
 
-/* ====== HELPERS ====== */
-const matEq=(a,b)=>{for(let i=0;i<a.length;i++)for(let j=0;j<a.length;j++)if(a[i][j]!==b[i][j])return false;return true};
-const rnd=()=>Math.random()<.5?1:0;
-const calcSize=()=>{const g=innerWidth<=600?4:6,max=innerWidth<=600?innerWidth*0.9:500,raw=(max-(settings.n-1)*g)/settings.n;return Math.max(22,Math.min(raw,innerWidth<=600?36:46))};
-const applyCSS=()=>{document.documentElement.style.setProperty('--n',settings.n);document.documentElement.style.setProperty('--size',calcSize()+'px');document.documentElement.style.setProperty('--gap',(innerWidth<=600?4:6)+'px');document.documentElement.style.setProperty('--zoom',settings.zoom)};
+  <!-- footer -->
+  <div class="footer">
+    <a id="tgLink" href="https://t.me/qdiag" target="_blank" rel="noopener">Telegram&nbsp;channel&nbsp;@qdiag</a>
+  </div>
 
-/* universal grid builder */
-const gridHTML=(n,getCls)=>Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>`<div class="tile ${getCls(i,j)}"></div>`).join('')).join('');
-const tileCls=(t,p,c)=>settings.mode==='bool'
-  ?(t?(c?'good':(p?'zero':'want')):(c?'bad':'zero'))
-  :(t^(p^c)?(c?'good':'want'):(c?'bad':'zero'));
-
-/* ====== ENCODE / LOAD ====== */
-const encode=()=>{let bits=settings.n.toString(2).padStart(4,'0')+settings.r.toString(2).padStart(4,'0')+(settings.mode==='mod'?1:0).toString(2).padStart(4,'0');for(let i=0;i<settings.n;i++)for(let j=0;j<settings.n;j++)bits+=target[i][j];return bitsToHex(bits)};
-const loadFromCode=code=>{
-  if(!/^[0-9A-F]+$/i.test(code))return false;
-  const bits=hexToBits(code);if(bits.length<12)return false;
-  const n=parseInt(bits.slice(0,4),2),r=parseInt(bits.slice(4,8),2),mb=parseInt(bits.slice(8,12),2);
-  if(n<2||n>10||r<1||r>6||![0,1].includes(mb))return false;
-  const cells=n*n,boardBits=bits.slice(12,12+cells).padEnd(cells,'0');
-  target=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>+boardBits[i*n+j]));
-  Object.assign(settings,{n,r,mode:mb?'mod':'bool'});
-  applyCSS();
-  initState();solved=false;updateModeButtons();$('#nVal').textContent=n;$('#rVal').textContent=r;render();return true
-};
-
-/* ====== STATE ====== */
-const initState=()=>{state={U:Array.from({length:settings.r},()=>Array(settings.n).fill(0)),V:Array.from({length:settings.r},()=>Array(settings.n).fill(0)),cur:0}};
-const genTarget=()=>{
-  const tU=Array.from({length:settings.r},()=>Array.from({length:settings.n},rnd)),
-        tV=Array.from({length:settings.r},()=>Array.from({length:settings.n},rnd));
-  target=Array.from({length:settings.n},()=>Array(settings.n).fill(0));
-  for(let k=0;k<settings.r;k++)for(let i=0;i<settings.n;i++)if(tU[k][i])for(let j=0;j<settings.n;j++)if(tV[k][j])settings.mode==='bool'?target[i][j]=1:target[i][j]^=1
-};
-const player=()=>{
-  const P=Array.from({length:settings.n},()=>Array(settings.n).fill(0));
-  for(let k=0;k<settings.r;k++)for(let i=0;i<settings.n;i++)if(state.U[k][i])for(let j=0;j<settings.n;j++)if(state.V[k][j])settings.mode==='bool'?P[i][j]=1:P[i][j]^=1;
-  return P
-};
-
-/* ====== RENDER ====== */
-const render=()=>{
-  const P=player(),k=state.cur;
-  $('#editGrid').innerHTML=gridHTML(settings.n,(i,j)=>tileCls(target[i][j],P[i][j],state.U[k][i]&&state.V[k][j]));
-  $('#rowToggles').innerHTML=state.U[k].map((v,i)=>`<button class="toggle ${v?'on':''}" data-row="${i}"></button>`).join('');
-  $('#colToggles').innerHTML=state.V[k].map((v,j)=>`<button class="toggle ${v?'on':''}" data-col="${j}"></button>`).join('');
-  $('#cards').innerHTML=Array.from({length:settings.r},(_,d)=>{
-    const mini=gridHTML(settings.n,(i,j)=>tileCls(target[i][j],P[i][j],state.U[d][i]&&state.V[d][j]));
-    return `<div class="card ${d===k?'active':''}" data-card="${d}"><div class="grid mini">${mini}</div></div>`
-  }).join('');
-  $('#previews').innerHTML=settings.showPreview
-    ?`<div class="gridCard"><div class="label">Target</div><div class="grid mini">${gridHTML(settings.n,(i,j)=>target[i][j]?'good':'zero')}</div></div>
-       <div class="gridCard"><div class="label">You</div><div class="grid mini">${gridHTML(settings.n,(i,j)=>P[i][j]?'good':'zero')}</div></div>`
-    :'';
-  if(!solved&&matEq(P,target)){solved=true;$('#successMsg').style.display='flex'}
-  else if(solved&&!matEq(P,target)){solved=false;$('#successMsg').style.display='none'}
-  $('#codeInput').value=encode()
-};
-
-/* ====== UI EVENTS ====== */
-$('#menuBtn').onclick=()=>$('#panel').classList.toggle('open');
-$('#newBtn').onclick=()=>{newGame();$('#panel').classList.remove('open')};
-
-/* hide overlay on click */
-$('#successMsg').onclick = () => { $('#successMsg').style.display = 'none'; };
-
-/* delegated toggles */
-$('#app').addEventListener('click',e=>{
-  const t=e.target.closest('[data-row],[data-col],[data-card]');if(!t)return;
-  if(t.dataset.row!==undefined)state.U[state.cur][+t.dataset.row]^=1;
-  else if(t.dataset.col!==undefined)state.V[state.cur][+t.dataset.col]^=1;
-  else state.cur=+t.dataset.card;
-  render()
-});
-
-/* clear */
-$('#clearBtn').onclick=()=>{state.U.forEach(u=>u.fill(0));state.V.forEach(v=>v.fill(0));solved=false;render()};
-
-/* clipboard */
-$('#copyCodeBtn').onclick=()=>{navigator.clipboard.writeText(encode()).then(()=>{const b=$('#copyCodeBtn');b.textContent='Copied';b.classList.add('copied');setTimeout(()=>{b.textContent='Copy Code';b.classList.remove('copied')},300)})};
-
-/* load code + Enter */
-$('#loadCodeBtn').onclick=()=>{if(!loadFromCode($('#codeInput').value.trim()))alert('Invalid code')};
-$('#codeInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loadCodeBtn').click()});
-
-/* mode */
-const updateModeButtons=()=>{$('#orBtn').classList.toggle('checked',settings.mode==='bool');$('#xorBtn').classList.toggle('checked',settings.mode==='mod')};
-$('#orBtn').onclick =()=>{
-  settings.mode='bool';
-  updateModeButtons();
-  newGame();
-};
-$('#xorBtn').onclick =()=>{
-  settings.mode='mod';
-  updateModeButtons();
-  newGame();
-};
-
-/* steppers */
-document.querySelectorAll('.stepper').forEach(st=>{
-  st.onclick=e=>{
-    const inc=e.target.classList.contains('plus')?1:e.target.classList.contains('minus')?-1:0;if(!inc)return;
-    switch(st.dataset.target){
-      case 'n':settings.n=Math.max(2,Math.min(10,settings.n+inc));$('#nVal').textContent=settings.n;newGame();break;
-      case 'r':settings.r=Math.max(1,Math.min(6,settings.r+inc));$('#rVal').textContent=settings.r;newGame();break;
-      case 'zoom':
-        const p=Math.round(settings.zoom*100)+inc*5;settings.zoom=Math.max(.5,Math.min(1,p/100));
-        $('#zoomVal').textContent=Math.round(settings.zoom*100)+' %';applyCSS();break
-    }
-  }
-});
-
-/* preview toggle */
-$('#previewToggle').onchange=e=>{settings.showPreview=e.target.checked;render()};
-
-/* modal */
-$('#helpLink').onclick=e=>{e.preventDefault();$('#helpModal').style.display='flex'};
-$('#closeHelp').onclick=()=>$('#helpModal').style.display='none';
-$('#helpModal').onclick=e=>{if(e.target.id==='helpModal')$('#helpModal').style.display='none'};
-
-/* resize */
-addEventListener('resize',()=>{applyCSS();render()});
-
-/* ====== BOOTSTRAP ====== */
-const newGame=()=>{applyCSS();initState();genTarget();solved=false;render()};
-$('#nVal').textContent=settings.n;$('#rVal').textContent=settings.r;$('#zoomVal').textContent='100 %';
-applyCSS();updateModeButtons();newGame();
-</script>
+  <!-- main script -->
+  <script src="script.js"></script>
 </body>
 </html>
