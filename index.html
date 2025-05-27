@@ -23,6 +23,9 @@
       <div class="title">BMF</div>
     </div>
     <div class="rightControls">
+      <div id="timerDisplay" class="timer">
+        <span id="timerValue">00:00</span>
+      </div>
       <a id="helpLink" href="#!">How&nbsp;to&nbsp;play</a>
       <button id="newBtn">New Game</button>
     </div>
@@ -56,6 +59,14 @@
       <label>Preview</label>
       <label class="switch">
         <input type="checkbox" id="previewToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting">
+      <label>Timer</label>
+      <label class="switch">
+        <input type="checkbox" id="timerToggle" checked>
         <span class="slider"></span>
       </label>
     </div>
@@ -105,6 +116,7 @@
 
   <!-- main script -->
   <script src="tutorial.js"></script>
+  <script src="timer.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

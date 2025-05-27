@@ -3,10 +3,14 @@ const STORAGE_KEY = 'bmfGame';
 let initializing = true;   // suppress auto-save during first render
 
 const saveGame = () => {
+  if (typeof Tutorial !== 'undefined' && Tutorial.isActive && Tutorial.isActive()) return;
+  
   const snapshot = {
     settings,
     target,
-    state
+    state,
+    timer: Timer.getState(),
+    wasSolved
   };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
@@ -31,6 +35,7 @@ const loadSavedGame = () => {
   Object.assign(settings, snap.settings);
   target = snap.target;
   state = snap.state;
+  wasSolved = snap.wasSolved || false;
 
   // simple validation
   if (
@@ -45,16 +50,22 @@ const loadSavedGame = () => {
   $('#nVal').textContent = settings.n;
   $('#rVal').textContent = settings.r;
   $('#zoomVal').textContent = Math.round(settings.zoom * 100) + ' %';
+  $('#timerToggle').checked = settings.showTimer;
 
   // recalc solved flag
   solved = matEq(player(), target);
+
+  // Restore timer state
+  if (snap.timer) {
+    Timer.setState(snap.timer);
+  }
 
   return true;
 };
 
 /* ====== SETTINGS & STATE ====== */
-const settings = { n: 5, r: 3, mode: 'mod', zoom: 1, showPreview: true };
-let solved = false, state, target;
+const settings = { n: 5, r: 3, mode: 'mod', zoom: 1, showPreview: true, showTimer: true };
+let solved = false, wasSolved = false, state, target;
 const $ = sel => document.querySelector(sel);
 
 const updateModeButtons = () => {
@@ -143,6 +154,9 @@ const loadFromCode = code => {
   applyCSS();
   initState();
   solved = false;
+  wasSolved = false;
+  Timer.reset();
+  Timer.start();
   updateModeButtons();
   $('#nVal').textContent = n;
   $('#rVal').textContent = r;
@@ -256,9 +270,14 @@ const render = () => {
 
   if (!solved && matEq(P, target)) {
     solved = true;
+    wasSolved = true;
+    Timer.stop();
     showToast();
   } else if (solved && !matEq(P, target)) {
     solved = false;
+    if (!wasSolved) {
+      Timer.start();
+    }
   }
 
   $('#codeInput').value = encode();
@@ -288,6 +307,11 @@ $('#app').addEventListener('click', e => {
     state.cur = +tgt.dataset.card;
 
   render();
+  
+  // Start timer only if puzzle was never solved
+  if (!solved && !wasSolved && !Timer.isRunning) {
+    Timer.start();
+  }
 });
 
 /* clear */
@@ -382,21 +406,38 @@ addEventListener('resize', () => {
   render();
 });
 
+/* timer toggle */
+$('#timerToggle').onchange = e => {
+  settings.showTimer = e.target.checked;
+  Timer.updateDisplay();
+  render();
+};
+
 /* ====== BOOTSTRAP ====== */
 const newGame = () => {
   applyCSS();
   initState();
   genTarget();
   solved = false;
+  wasSolved = false;
+  Timer.reset();
+  Timer.start();
   render();
 };
 
 $('#nVal').textContent = settings.n;
 $('#rVal').textContent = settings.r;
 $('#zoomVal').textContent = '100 %';
+$('#timerToggle').checked = settings.showTimer;
+Timer.updateDisplay();
 
-if (!loadSavedGame()) newGame();
-else render();
+
+if (!loadSavedGame()) {
+  newGame();
+} else {
+  render();
+  if (!wasSolved && !solved) Timer.start();
+}
 
 initializing = false;   // now enable auto-save
 });

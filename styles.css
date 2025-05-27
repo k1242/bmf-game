@@ -280,3 +280,33 @@ input:checked + .slider:before{transform:translateX(20px)}
 .toast-text {
   font-size: 1.1rem;
 }
+
+
+/* ====== Timer ====== */
+
+.timer {
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  background: rgba(0,0,0,.05);
+  border-radius: 8px;
+  min-width: 70px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+#timerValue {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Timer when puzzle is solved */
+.timer.solved {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(108, 99, 255, 0.3);
+  animation: timerGlow 2s ease-in-out infinite;
+}
+
+@keyframes timerGlow {
+  0%, 100% { box-shadow: 0 2px 8px rgba(108, 99, 255, 0.3); }
+  50% { box-shadow: 0 2px 16px rgba(108, 99, 255, 0.5); }
+}

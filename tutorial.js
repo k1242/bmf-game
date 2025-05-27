@@ -165,7 +165,9 @@ const Tutorial = (() => {
     const savedState = {
       settings: {...settings},
       target: target ? [...target.map(row => [...row])] : null,
-      state: state ? JSON.parse(JSON.stringify(state)) : null
+      state: state ? JSON.parse(JSON.stringify(state)) : null,
+      timerState: Timer.getState(),
+      wasSolved: typeof wasSolved !== 'undefined' ? wasSolved : false 
     };
     
     // Force enable preview for tutorial
@@ -239,13 +241,22 @@ const Tutorial = (() => {
       Object.assign(settings, overlay.savedState.settings);
       target = overlay.savedState.target;
       state = overlay.savedState.state;
+      wasSolved = overlay.savedState.wasSolved;
       
       $('#nVal').textContent = settings.n;
       $('#rVal').textContent = settings.r;
       $('#previewToggle').checked = settings.showPreview; // Update preview checkbox
+      $('#timerToggle').checked = settings.showTimer;
+      Timer.updateDisplay();
       updateModeButtons();
       applyCSS();
       render();
+
+      // Restore timer to previous state
+      Timer.setState({
+        ...overlay.savedState.timerState,
+        isRunning: overlay.savedState.timerState.isRunning && !wasSolved
+      });
     }
     
     // Remove overlay
@@ -258,5 +269,5 @@ const Tutorial = (() => {
     $('#panel').classList.remove('open');
   };
   
-  return { start };
+  return { start, isActive: () => tutorialActive };
 })();
