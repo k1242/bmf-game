@@ -50,7 +50,7 @@ def clip_time(time_value):
     except:
         return 1
 
-@app.route('/api/puzzle/solve', methods=['POST'])
+@app.route('/puzzle/solve', methods=['POST'])
 @rate_limit(max_requests=1, window=1)
 def solve_puzzle():
     try:
@@ -104,7 +104,7 @@ def solve_puzzle():
         app.logger.error(f"Error in solve_puzzle: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-@app.route('/api/puzzle/star', methods=['POST'])
+@app.route('/puzzle/star', methods=['POST'])
 @rate_limit(max_requests=1, window=1)
 def star_puzzle():
     try:
@@ -136,7 +136,7 @@ def star_puzzle():
         app.logger.error(f"Error in star_puzzle: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-@app.route('/api/puzzle/stats/<code>', methods=['GET'])
+@app.route('/puzzle/stats/<code>', methods=['GET'])
 @rate_limit(max_requests=5, window=1)  # More lenient for GET requests
 def get_puzzle_stats(code):
     try:
