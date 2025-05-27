@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Nginx for serving frontend and proxying API
   nginx:
