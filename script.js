@@ -186,6 +186,27 @@ const player = () => {
   return P;
 };
 
+/* ====== CELEBRATION ====== */
+const showToast = () => {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `
+    <span class="toast-icon">✓</span>
+    <span class="toast-text">Correct!</span>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  // Trigger animation
+  setTimeout(() => toast.classList.add('show'), 10);
+  
+  // Hide and remove
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
+};
+
 /* ====== RENDER ====== */
 const render = () => {
   const P = player();
@@ -229,10 +250,9 @@ const render = () => {
 
   if (!solved && matEq(P, target)) {
     solved = true;
-    $('#successMsg').style.display = 'flex';
+    showToast();
   } else if (solved && !matEq(P, target)) {
     solved = false;
-    $('#successMsg').style.display = 'none';
   }
 
   $('#codeInput').value = encode();
@@ -247,9 +267,6 @@ $('#newBtn').onclick = () => {
   newGame();
   $('#panel').classList.remove('open');
 };
-
-/* hide overlay on click */
-$('#successMsg').onclick = () => { $('#successMsg').style.display = 'none'; };
 
 /* delegated toggles */
 $('#app').addEventListener('click', e => {
@@ -278,7 +295,7 @@ $('#clearBtn').onclick = () => {
 $('#copyCodeBtn').onclick = () => {
   navigator.clipboard.writeText(encode()).then(() => {
     const btn = $('#copyCodeBtn');
-    btn.textContent = 'Copied';
+    btn.textContent = 'Copy Code';
     btn.classList.add('copied');
     setTimeout(() => {
       btn.textContent = 'Copy Code';
@@ -353,11 +370,7 @@ $('#previewToggle').onchange = e => {
 /* modal controls */
 $('#helpLink').onclick = e => {
   e.preventDefault();
-  $('#helpModal').style.display = 'flex';
-};
-$('#closeHelp').onclick = () => $('#helpModal').style.display = 'none';
-$('#helpModal').onclick = e => {
-  if (e.target.id === 'helpModal') $('#helpModal').style.display = 'none';
+  Tutorial.start();
 };
 
 /* resize handling */

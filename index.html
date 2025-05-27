@@ -79,24 +79,6 @@
     <a class="panelLink" href="https://forms.gle/tAUDAFZZKGTbSEpk9" target="_blank" rel="noopener">Give Feedback</a>
   </div>
 
-  <!-- ====== HELP MODAL ====== -->
-  <div id="helpModal" class="helpModal">
-    <div class="helpBox">
-      <h2>How to play</h2>
-      <ul>
-        <li>Cover cells to match the hidden pattern.</li>
-        <li>In each layer select rows and columns by outer boxes to fill intersections.</li>
-        <li>All layers are combined (<b>OR</b> or <b>XOR</b>) into the final pattern.</li>
-        <li><b>Colours:</b><br>
-          <span class="tile want"></span> Need to fill<br>
-          <span class="tile good"></span> Correct<br>
-          <span class="tile bad"></span> Incorrect</li>
-        <li>In <b>Settings (☰)</b> select combine mode, board size and number of layers.</li>
-      </ul>
-      <button id="closeHelp">Got it!</button>
-    </div>
-  </div>
-
   <!-- ====== GAME ====== -->
   <div id="app">
     <div class="editWrap">
@@ -116,15 +98,13 @@
     <div id="cards"></div>
   </div>
 
-  <!-- solved overlay -->
-  <div id="successMsg"><div>✔ Correct!</div></div>
-
   <!-- footer -->
   <div class="footer">
     <a id="tgLink" href="https://t.me/qdiag" target="_blank" rel="noopener">Telegram&nbsp;channel&nbsp;@qdiag</a>
   </div>
 
   <!-- main script -->
+  <script src="tutorial.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
