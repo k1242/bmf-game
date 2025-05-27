@@ -15,6 +15,12 @@ pip-delete-this-directory.txt
 .dockerignore
 docker-compose.override.yml
 
+# Certbot
+certbot/
+
+# Frontend build directory
+frontend/
+
 # IDE
 .vscode/
 .idea/
