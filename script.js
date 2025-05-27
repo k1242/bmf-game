@@ -57,6 +57,12 @@ const settings = { n: 5, r: 3, mode: 'mod', zoom: 1, showPreview: true };
 let solved = false, state, target;
 const $ = sel => document.querySelector(sel);
 
+const updateModeButtons = () => {
+  $('#orBtn').classList.toggle('checked', settings.mode === 'bool');
+  $('#xorBtn').classList.toggle('checked', settings.mode === 'mod');
+};
+
+
 /* ====== BIT / HEX ====== */
 const bitsToHex = b => {
   const pad = (4 - b.length % 4) % 4;
@@ -261,6 +267,7 @@ const render = () => {
 };
 
 /* ====== UI EVENTS ====== */
+document.addEventListener('DOMContentLoaded', () => {
 $('#menuBtn').onclick = () => $('#panel').classList.toggle('open');
 
 $('#newBtn').onclick = () => {
@@ -313,10 +320,6 @@ $('#codeInput').addEventListener('keydown', e => {
 });
 
 /* mode buttons */
-const updateModeButtons = () => {
-  $('#orBtn').classList.toggle('checked', settings.mode === 'bool');
-  $('#xorBtn').classList.toggle('checked', settings.mode === 'mod');
-};
 
 $('#orBtn').onclick = () => {
   settings.mode = 'bool';
@@ -396,3 +399,8 @@ if (!loadSavedGame()) newGame();
 else render();
 
 initializing = false;   // now enable auto-save
+});
+
+
+
+
