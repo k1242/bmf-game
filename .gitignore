@@ -1,43 +1,6 @@
-# Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-.venv
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Docker
-.dockerignore
-docker-compose.override.yml
-
-# Certbot
-certbot/
-
-# Frontend build directory
-frontend/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# SSL certificates
-ssl/
-
-# Logs
-*.log
-
-# Environment files
+*.pyc
 .env
-.env.local
+certbot/
+mongo-data/
+.DS_Store

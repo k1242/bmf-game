@@ -50,7 +50,7 @@ const markPuzzleStarred = (code) => {
 // Send solve data to server
 const sendSolveData = async (code, time) => {
   try {
-    const response = await fetch(`${API_BASE}/puzzle/solve`, {
+    const response = await fetch(`${API_BASE}/solve`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ const sendSolveData = async (code, time) => {
 // Send star data to server
 const sendStarData = async (code) => {
   try {
-    const response = await fetch(`${API_BASE}/puzzle/star`, {
+    const response = await fetch(`${API_BASE}/star`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
