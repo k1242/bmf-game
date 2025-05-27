@@ -64,7 +64,7 @@ const loadSavedGame = () => {
 };
 
 /* ====== SETTINGS & STATE ====== */
-const settings = { n: 5, r: 3, mode: 'mod', zoom: 1, showPreview: true, showTimer: true };
+const settings = { n: 5, r: 3, mode: 'mod', zoom: 1, showPreview: true, showTimer: false };
 let solved = false, wasSolved = false, state, target;
 const $ = sel => document.querySelector(sel);
 
@@ -441,4 +441,6 @@ if (!loadSavedGame()) {
 
 initializing = false;   // now enable auto-save
 });
+
+
 
