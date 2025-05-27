@@ -47,7 +47,7 @@ const Tutorial = (() => {
     {
       action: () => {
         clearHighlights();
-        showMessage("Perfect! You've solved the puzzle!", "Tap to continue", true);
+        showMessage("Perfect! You've solved the puzzle!", "Tap to continue", true, true);
       },
       onContinue: () => nextStep()
     },
@@ -55,7 +55,7 @@ const Tutorial = (() => {
       action: () => {
         clearHighlights();
         highlightElements(['#menuBtn'], 
-          "Open the menu to customize your experience");
+          "Open the menu to customize your experience", true);
       },
       validate: () => $('#panel').classList.contains('open')
     },
@@ -63,7 +63,7 @@ const Tutorial = (() => {
       action: () => {
         clearHighlights();
         highlightElements(['.setting:nth-child(1)']);
-        showMessage("Choose combine mode: OR (layers stack: 1+1=1) or XOR (layers cancel: 1+1=0).", "Tap to continue", true);
+        showMessage("Choose combine mode: OR (layers stack: 1+1=1) or XOR (layers cancel: 1+1=0)", "Tap to continue", true, true);
       },
       onContinue: () => nextStep()
     },
@@ -71,7 +71,7 @@ const Tutorial = (() => {
       action: () => {
         clearHighlights();
         highlightElements(['.setting:nth-child(2)', '.setting:nth-child(3)']);
-        showMessage("Experiment with settings to find your preferred challenge level", "Tap to finish tutorial", true);
+        showMessage("Experiment with settings to find your preferred challenge level", "Tap to finish tutorial", true, true);
       },
       onContinue: () => endTutorial()
     }
@@ -103,7 +103,7 @@ const Tutorial = (() => {
   };
   
   // Highlight specific elements
-  const highlightElements = (selectors, message = "") => {
+  const highlightElements = (selectors, message = "", bottomPosition = false) => {
     clearHighlights();
     
     selectors.forEach(sel => {
@@ -122,7 +122,7 @@ const Tutorial = (() => {
     
     // Only show message if provided and not empty
     if (message) {
-      showMessage(message);
+      showMessage(message, "", false, bottomPosition);
     }
   };
   
@@ -134,13 +134,22 @@ const Tutorial = (() => {
   };
   
   // Show message
-  const showMessage = (text, continueText = "", showContinue = false) => {
+  const showMessage = (text, continueText = "", showContinue = false, bottomPosition = false) => {
     const textEl = overlay.querySelector('.tutorialText');
     const continueEl = overlay.querySelector('.tutorialContinue');
     
     textEl.textContent = text;
     continueEl.textContent = continueText || "Tap to continue";
     continueEl.style.display = showContinue ? 'block' : 'none';
+    
+    // Position the message
+    if (bottomPosition) {
+      messageBox.style.top = 'auto';
+      messageBox.style.bottom = '20px';
+    } else {
+      messageBox.style.top = '10px';
+      messageBox.style.bottom = 'auto';
+    }
     
     messageBox.style.display = text || showContinue ? 'block' : 'none';
   };

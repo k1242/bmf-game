@@ -401,6 +401,3 @@ else render();
 initializing = false;   // now enable auto-save
 });
 
-
-
-
