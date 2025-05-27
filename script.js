@@ -1,3 +1,116 @@
+/* ====== API INTEGRATION ====== */
+const API_BASE = 'https://qdiag.xyz/api/';
+const SOLVED_KEY = 'bmfSolvedPuzzles';
+const USER_ID_KEY = 'bmfUserId';
+
+// Generate or get user ID
+const getUserId = () => {
+  let userId = localStorage.getItem(USER_ID_KEY);
+  if (!userId) {
+    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem(USER_ID_KEY, userId);
+  }
+  return userId;
+};
+
+// Get solved puzzles from localStorage
+const getSolvedPuzzles = () => {
+  try {
+    return JSON.parse(localStorage.getItem(SOLVED_KEY) || '{}');
+  } catch {
+    return {};
+  }
+};
+
+// Mark puzzle as solved in localStorage
+const markPuzzleSolved = (code) => {
+  const solved = getSolvedPuzzles();
+  solved[code] = {
+    solvedAt: Date.now(),
+    starred: false
+  };
+  localStorage.setItem(SOLVED_KEY, JSON.stringify(solved));
+};
+
+// Check if puzzle was starred
+const isPuzzleStarred = (code) => {
+  const solved = getSolvedPuzzles();
+  return solved[code]?.starred || false;
+};
+
+// Mark puzzle as starred
+const markPuzzleStarred = (code) => {
+  const solved = getSolvedPuzzles();
+  if (solved[code]) {
+    solved[code].starred = true;
+    localStorage.setItem(SOLVED_KEY, JSON.stringify(solved));
+  }
+};
+
+// Send solve data to server
+const sendSolveData = async (code, time) => {
+  try {
+    const response = await fetch(`${API_BASE}/puzzle/solve`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code,
+        time,
+        userId: getUserId()
+      })
+    });
+    
+    if (response.ok) {
+      markPuzzleSolved(code);
+    }
+  } catch (error) {
+    console.error('Failed to send solve data:', error);
+  }
+};
+
+// Send star data to server
+const sendStarData = async (code) => {
+  try {
+    const response = await fetch(`${API_BASE}/puzzle/star`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code,
+        userId: getUserId()
+      })
+    });
+    
+    if (response.ok) {
+      markPuzzleStarred(code);
+      updateStarButton();
+    }
+  } catch (error) {
+    console.error('Failed to send star data:', error);
+  }
+};
+
+// Update star button visibility and state
+const updateStarButton = () => {
+  const starBtn = $('#starBtn');
+  if (!starBtn) return;
+  
+  const code = encode();
+  const puzzleSolved = getSolvedPuzzles()[code];
+  
+  if (solved || wasSolved || puzzleSolved) {
+    starBtn.style.display = 'block';
+    starBtn.disabled = isPuzzleStarred(code);
+    starBtn.textContent = isPuzzleStarred(code) ? '★ Starred' : '☆ Star';
+  } else {
+    starBtn.style.display = 'none';
+  }
+};
+
+
 /* ====== PERSISTENCE ====== */
 const STORAGE_KEY = 'bmfGame';
 let initializing = true;   // suppress auto-save during first render
@@ -58,6 +171,13 @@ const loadSavedGame = () => {
   // Restore timer state
   if (snap.timer) {
     Timer.setState(snap.timer);
+    // Check if puzzle was previously solved
+    const code = encode();
+    const puzzleSolved = getSolvedPuzzles()[code];
+    if (puzzleSolved && !wasSolved) {
+      wasSolved = true;
+      Timer.stop();
+    }
   }
 
   return true;
@@ -157,6 +277,12 @@ const loadFromCode = code => {
   wasSolved = false;
   Timer.reset();
   Timer.start();
+  // Check if this puzzle was previously solved
+  const puzzleSolved = getSolvedPuzzles()[code];
+  if (puzzleSolved) {
+    wasSolved = true;
+    Timer.stop();
+  }
   updateModeButtons();
   $('#nVal').textContent = n;
   $('#rVal').textContent = r;
@@ -273,6 +399,10 @@ const render = () => {
     wasSolved = true;
     Timer.stop();
     showToast();
+    // Send solve data to server
+    const code = encode();
+    const time = Timer.getTime();
+    sendSolveData(code, time);
   } else if (solved && !matEq(P, target)) {
     solved = false;
     if (!wasSolved) {
@@ -281,6 +411,8 @@ const render = () => {
   }
 
   $('#codeInput').value = encode();
+
+  updateStarButton();
 
   if (!initializing) saveGame();  // auto-persist
 };

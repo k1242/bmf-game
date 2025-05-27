@@ -310,3 +310,36 @@ input:checked + .slider:before{transform:translateX(20px)}
   0%, 100% { box-shadow: 0 2px 8px rgba(108, 99, 255, 0.3); }
   50% { box-shadow: 0 2px 16px rgba(108, 99, 255, 0.5); }
 }
+
+
+/* Star button */
+#starBtn {
+  cursor: pointer;
+  padding: 8px 16px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+}
+
+#starBtn:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
+
+#starBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--accent);
+  color: #fff;
+}
+
+@media(max-width:600px) {
+  #starBtn {
+    margin-top: 8px;
+  }
+}

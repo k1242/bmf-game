@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: bmf_mongodb
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=bmf_game
+
+  app:
+    build: .
+    container_name: bmf_app
+    expose:
+      - "5000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/
+    depends_on:
+      - mongodb
+    command: gunicorn -b 0.0.0.0:5000 app:app --reload
+    networks: [backend]
+
+  nginx:
+    image: nginx:alpine
+    container_name: bmf_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/bmf.conf:/etc/nginx/conf.d/bmf.conf:ro
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - app
+    networks: [backend]
+
+networks:
+  backend:
+
+volumes:
+  mongodb_data:

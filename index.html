@@ -25,6 +25,7 @@
     <div class="rightControls">
       <div id="timerDisplay" class="timer">
         <span id="timerValue">00:00</span>
+        <button id="starBtn" style="display:none">☆ Star</button>
       </div>
       <a id="helpLink" href="#!">How&nbsp;to&nbsp;play</a>
       <button id="newBtn">New Game</button>
@@ -118,5 +119,20 @@
   <script src="tutorial.js"></script>
   <script src="timer.js"></script>
   <script src="script.js"></script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const starBtn = document.getElementById('starBtn');
+    if (starBtn) {
+      starBtn.addEventListener('click', () => {
+        const code = encode();
+        if (!isPuzzleStarred(code)) {
+          sendStarData(code);
+        }
+      });
+    }
+  });
+  </script>
+  
 </body>
 </html>
